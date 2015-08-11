@@ -1,0 +1,30 @@
+---
+- hosts: all
+  tasks:
+    - name: download subunit2sql
+      git: repo=https://github.com/openstack-infra/subunit2sql.git
+           dest=~/subunit2sql
+           accept_hostkey=true
+
+    - name: create virtualenv dir
+      file: name=~/.venvs state=directory
+
+    - name: install subunit2sql dependencies
+      pip:  requirements=~/subunit2sql/requirements.txt virtualenv=~/.venvs/subunit2sql
+
+    - name: install MySQLdb dependencies
+      pip:  name=MySQL-python virtualenv=~/.venvs/subunit2sql
+
+    - name: install subunit2sql
+      pip: name=file:///home/vagrant/subunit2sql virtualenv=~/.venvs/subunit2sql
+
+    - name: copy config to subunit2sql
+      copy: src=files/subunit2sql.conf
+            dest=~/subunit2sql/subunit2sql-db-manage.conf
+
+    - name: configure subunit2sql-db-manage
+      shell: |
+        source ~/.venvs/subunit2sql/bin/activate
+        subunit2sql-db-manage --config-file ~/subunit2sql/subunit2sql-db-manage.conf upgrade head
+      args:
+        executable: /bin/bash

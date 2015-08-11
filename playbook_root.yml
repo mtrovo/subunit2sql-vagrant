@@ -1,0 +1,25 @@
+---
+- hosts: all
+  tasks:
+    - name: install packages
+      apt: name={{item}} update_cache=yes state=present
+      with_items:
+        - build-essential
+        - python-pip
+        - mysql-server
+        - mysql-client
+        - libmysqlclient-dev
+        - git
+        - python-dev
+
+    - name: install virtualenv
+      pip: name=virtualenv state=present
+
+    - name: install MySQLdb pip package
+      pip: name=MySQL-python state=present
+
+    - name: create mysql database
+      mysql_db: name=openstack state=present
+
+    - name: create vagrant user for mysql
+      mysql_user: name=vagrant password=vagrant priv=openstack.*:ALL state=present
